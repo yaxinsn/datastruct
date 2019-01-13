@@ -1,0 +1,12 @@
+
+------------------------------
+增加一个-SUB,表示src-str是不是其中一个key的一部分。
+[root@localhost V5]# ./acsmx abc abc123 -SUB
+find it.
+normal pgm end
+[root@localhost V5]# ./acsmx abc1 abc123 -SUB
+find it.
+normal pgm end
+[root@localhost V5]# ./acsmx 123 abc123 -SUB
+
+

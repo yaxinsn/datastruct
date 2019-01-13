@@ -1,0 +1,25 @@
+
+
+增加一个 -TOL的参数。表示找出从源字符串的开始就匹配的关键字。
+./acsmx abc123abc abc  //可以找到两个关键字。这两个关键字在源字符串的offset分别为0,6
+MatchFound:771 index 0
+abc
+MatchFound:771 index 6
+abc
+normal pgm end
+[root@localhost V4]# ./acsmx abc123abc abc -TOL
+MatchFound:771 index 0
+abc
+normal pgm end
+[root@localhost V4]# ./acsmx abc123abc 1abc -TOL
+normal pgm end
+
+[root@localhost V4]# ./acsmx /usr/bin/ /bin -TOL  //找不到。
+normal pgm end
+[root@localhost V4]# ./acsmx abc123abc abc1 abc -TOL //在此可以找到两个关键字。
+MatchFound:771 index 0
+abc
+MatchFound:771 index 0
+abc1
+normal pgm end
+
