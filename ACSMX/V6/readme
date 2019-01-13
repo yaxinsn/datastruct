@@ -1,0 +1,45 @@
+-----------------------------
+作成交互性的软件。
+
+abc 123 zxc是三个Key
+
+在please inut:后面输入
+TOL <text>
+nTOL <text>
+SUB <sub-text>
+exit it;
+
+TOL 命令：表示在<text>里找三个KEY，以top of line的方式。只在text的首字符开始匹配。
+nTOL命令：则是在<text>任何字符都可以匹配key.
+SUB命令： sub-text是不是在key们的父目录。
+
+./acsmx abc 123 zxc
+please input:
+N x
+unknown cmd
+please input:
+nTOL abc1223123abc123zxcabc
+//result
+abc
+123
+abc
+123
+zxc
+abc
+
+please input:
+TOL abc1223123abc123zxcabc
+abc   //result
+
+please input:
+SUB ab
+find <ab>
+
+please input:
+SUB abc
+find <abc>
+
+please input:
+SUB abcx //没有找到。
+please input:
+
