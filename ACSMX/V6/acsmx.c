@@ -630,13 +630,13 @@ acsmSearch (ACSM_STRUCT * acsm, unsigned char *Tx, int n,
 #endif				
                 {
                     nfound++;
-					{
-							if (Match (mlist->id, index, data) > 0)
-							{
-								*current_state = state;
-								return nfound;
-							}
-						}
+                    {
+                        if (Match (mlist->id, index, data) > 0)
+                        {
+                            *current_state = state;
+                            return nfound;
+                        }
+                    }
 					
                 }
 #ifndef __CASE__									
