@@ -139,17 +139,21 @@ queue_add (QUEUE * s, int state)
     {
       q = s->tail = s->head = (QNODE *) AC_MALLOC (sizeof (QNODE));
       MEMASSERT (q, "queue_add");
-      q->state = state;
-      q->next = 0;
+      if(q){
+        q->state = state;
+        q->next = 0;
+      }
     }
   else
     {
       q = (QNODE *) AC_MALLOC (sizeof (QNODE));
       MEMASSERT (q, "queue_add");
-      q->state = state;
-      q->next = 0;
-      s->tail->next = q;
-      s->tail = q;
+      if(q){
+          q->state = state;
+          q->next = 0;
+          s->tail->next = q;
+          s->tail = q;
+      }
     }
   s->count++;
 }
@@ -206,6 +210,7 @@ queue_free (QUEUE * s)
 /*
 ** Case Translation Table 
 */ 
+#if 0
 static unsigned char xlatcase[256];
 
 /*
@@ -221,7 +226,6 @@ init_xlatcase ()
     }
 }
 
-
 /*
 *
 */ 
@@ -229,11 +233,15 @@ static inline void
 ConvertCaseEx (unsigned char *d, unsigned char *s, int m) 
 {
   int i;
+  
   for (i = 0; i < m; i++)
     {
-      d[i] = xlatcase[s[i]];
+  //    d[i] = xlatcase[s[i]];
+        d[i] = s[i];
     }
 }
+
+#endif
 
 
 /*
@@ -245,8 +253,10 @@ CopyMatchListEntry (ACSM_PATTERN * px)
   ACSM_PATTERN * p;
   p = (ACSM_PATTERN *) AC_MALLOC (sizeof (ACSM_PATTERN));
   MEMASSERT (p, "CopyMatchListEntry");
-  memcpy (p, px, sizeof (ACSM_PATTERN));
-  p->next = 0;
+  if(p){
+      memcpy (p, px, sizeof (ACSM_PATTERN));
+      p->next = 0;
+  }
   return p;
 }
 
@@ -261,9 +271,11 @@ AddMatchListEntry (ACSM_STRUCT * acsm, int state, ACSM_PATTERN * px)
   ACSM_PATTERN * p;
   p = (ACSM_PATTERN *) AC_MALLOC (sizeof (ACSM_PATTERN));
   MEMASSERT (p, "AddMatchListEntry");
-  memcpy (p, px, sizeof (ACSM_PATTERN));
-  p->next = acsm->acsmStateTable[state].MatchList;
-  acsm->acsmStateTable[state].MatchList = p;
+  if(p){
+      memcpy (p, px, sizeof (ACSM_PATTERN));
+      p->next = acsm->acsmStateTable[state].MatchList;
+      acsm->acsmStateTable[state].MatchList = p;
+  }
 }
 
 
@@ -442,7 +454,7 @@ Convert_NFA_To_DFA (ACSM_STRUCT * acsm)
 ACSM_STRUCT * acsmNew () 
 {
   ACSM_STRUCT * p;
-  init_xlatcase ();
+ // init_xlatcase ();
   p = (ACSM_STRUCT *) AC_MALLOC (sizeof (ACSM_STRUCT));
   MEMASSERT (p, "acsmNew");
   if (p)
@@ -461,6 +473,7 @@ acsmAddPattern (ACSM_STRUCT * p, unsigned char *pat, int n, int nocase,
   ACSM_PATTERN * plist;
   plist = (ACSM_PATTERN *) AC_MALLOC (sizeof (ACSM_PATTERN));
   MEMASSERT (plist, "acsmAddPattern");
+  if(plist){
 #ifndef __CASE__
   plist->patrn = (unsigned char *) AC_MALLOC (n);
   ConvertCaseEx (plist->patrn, pat, n);
@@ -470,6 +483,8 @@ acsmAddPattern (ACSM_STRUCT * p, unsigned char *pat, int n, int nocase,
   plist->id = plist->casepatrn; //具体这个id为安装时，关键字对应的value信息。--刘丹
 #else
     plist->patrn = (unsigned char *) AC_MALLOC (n);
+    if(!plist->patrn)
+	  		goto error;
     memcpy (plist->patrn, pat, n);
 	plist->nocase = 0;
 	plist->id = plist->patrn; //具体这个id为安装时，关键字对应的value信息。--刘丹
@@ -483,7 +498,14 @@ acsmAddPattern (ACSM_STRUCT * p, unsigned char *pat, int n, int nocase,
   plist->iid = iid;
   plist->next = p->acsmPatterns;
   p->acsmPatterns = plist;
+  }
+  else
+    return -1;
+    
   return 0;
+error:
+	AC_FREE(p);
+	return -1;  
 }
 
 
@@ -506,6 +528,8 @@ acsmCompile (ACSM_STRUCT * acsm)
         (ACSM_STATETABLE *) AC_MALLOC (sizeof (ACSM_STATETABLE) *
                                         acsm->acsmMaxStates);
     MEMASSERT (acsm->acsmStateTable, "acsmCompile");
+    if(!acsm->acsmStateTable)
+        return -1;
     memset (acsm->acsmStateTable, 0,
         sizeof (ACSM_STATETABLE) * acsm->acsmMaxStates);
 
@@ -553,7 +577,7 @@ acsmCompile (ACSM_STRUCT * acsm)
 }
 
 
-static unsigned char Tc[64*1024];
+//static unsigned char Tc[64*1024];
 
 /*
 *   Search Text or Binary Data for Pattern matches
@@ -700,6 +724,19 @@ acsmFree (ACSM_STRUCT * acsm)
     }
     AC_FREE (acsm);
 }
+void acsmLoopMlistUserData (ACSM_STRUCT * acsm, int (*freeUser) (void * dataNeedFree))
+{
+    ACSM_PATTERN * mlist, *ilist;
+    
+    mlist = acsm->acsmPatterns;
+    while(mlist)
+    {
+        ilist = mlist;
+        mlist = mlist->next;
+        freeUser(ilist->id);
+
+    }
+}
 
 /*
  * 
@@ -770,13 +807,3 @@ int acsmPrintSummaryInfo(void)
 #endif
     return 0;
 }
-
-#define ACSMX_MAIN 
-#ifdef ACSMX_MAIN
-  
-/*
-*  Text Data Buffer
-*/ 
-
-#endif /*  */
-

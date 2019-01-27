@@ -88,7 +88,7 @@ typedef struct {
 	ACSM_STATETABLE * acsmStateTable;
 
         int   bcSize;
-        short bcShift[256];
+      //  short bcShift[256];
 
 }ACSM_STRUCT;
 
@@ -111,5 +111,7 @@ void acsmFree ( ACSM_STRUCT * acsm );
 int acsmPrintDetailInfo(ACSM_STRUCT *);
 
 int acsmPrintSummaryInfo(void);
+void
+acsmLoopMlistUserData (ACSM_STRUCT * acsm, int (*freeUser) (void * dataNeedFree));
 int acsmSearch2 (ACSM_STRUCT * acsm, unsigned char *Tx, int len);
 #endif
