@@ -813,6 +813,8 @@ acsmFree (ACSM_STRUCT * acsm)
 {
     int i;
     ACSM_PATTERN * mlist, *ilist;
+    if(acsm->acsmStateTable)
+    {
     for (i = 0; i < acsm->acsmMaxStates; i++)
     {
         mlist = acsm->acsmStateTable[i].MatchList;
