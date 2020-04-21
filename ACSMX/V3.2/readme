@@ -1,0 +1,124 @@
+2020-4-21
+由于使用AC算法，在强访中配置目录时，
+key目录为 /mac/low
+当用户输入/tmp/mac/low时。AC算法会把/mac/low 也匹配到。见下测试。这是由于很多的状态都要回到状态1.如 status 3 （a字符）遇到/时，状态回到1.
+详细的对比见V3.1与V3.2的说明。
+
+V3.1]# ./acsmx /tmp/mac/low    /mac/low 
+				/tmp/mac/low 用户输入      /mac/low 是ac里的key1。
+				
+status 0 
+  / = 1    	
+status 1 
+  / = 1    	  m = 2    	
+status 2 
+  / = 1    	  a = 3    	
+status 3 
+  / = 1    	  c = 4    	
+status 4 
+  / = 5    	
+status 5 
+  / = 1    	  l = 6    	  m = 2    	
+status 6 
+  / = 1    	  o = 7    	
+status 7 
+  / = 1    	  w = 8    	
+status 8 
+  / = 1    	
+MatchFound:758 index 4 
+/mac/low
+normal pgm end
+[root@localhost V3.1]# 
+-----------------------------------------------------------------------
+
+命令的说明：
+ ./acsmx 123abc    abcd abc    123 abc123
+          用户输入 key1  key2 key3 key4.
+		  在123abc 中查找abcd abc 123 abc123.
+		  
+		  
+		  
+V3.1输出的信息：
+./acsmx b123abc abcd abc 123 abc123
+status 0 
+  1 = 7    	  a = 1    				//状态0有两个可用字符。 如果用户输入第一个字符是 b，则它的nextstate还是0.直到遇到1 或是a .
+status 1 
+  1 = 7    	  a = 1    	  b = 2    	
+status 2 
+  1 = 7    	  a = 1    	  c = 3    	
+status 3 
+  1 = 4    	  a = 1    	  d = 10   	
+status 4 
+  1 = 7    	  2 = 5    	  a = 1    	
+status 5 
+  1 = 7    	  3 = 6    	  a = 1    	
+status 6 
+  1 = 7    	  a = 1    	
+status 7 
+  1 = 7    	  2 = 8    	  a = 1    	
+status 8 
+  1 = 7    	  3 = 9    	  a = 1    	
+status 9 
+  1 = 7    	  a = 1    	
+status 10 
+  1 = 7    	  a = 1    	
+status 11 
+
+status 12 
+
+status 13 
+
+status 14 
+
+status 15 
+
+status 16 
+
+MatchFound:758 index 1 
+123
+MatchFound:758 index 4 
+abc
+normal pgm end
+[root@localhost V3.1]# 
+
+V3.2的在创建AC状态表时，去掉了Build_NFA 和Convert_NFA_To_DFA的部分，这样只会从用户输入的第一个字符进行强制匹配。如果用户第一个字符不配置，则会直接退出。这样就很好的做到了从根匹配的要求。见修改点2.
+V3.2输出的信息：
+./acsmx b123abc abcd abc 123 abc123
+status 0 
+  1 = 7    	  a = 1    			//状态0有两个可用字符。 如果用户输入第一个字符是 b，则它的nextstate还是0,在V3.2里，如果发现nextstate ==0或是FAILED 则表示发现不配置的情况，直接退出。见修改点1.
+status 1 
+  b = 2    	
+status 2 
+  c = 3    	
+status 3 
+  1 = 4    	  d = 10   	
+status 4 
+  2 = 5    	
+status 5 
+  3 = 6    	
+status 6 
+
+status 7 
+  2 = 8    	
+status 8 
+  3 = 9    	
+status 9 
+
+status 10 
+
+status 11 
+
+status 12 
+
+status 13 
+
+status 14 
+
+status 15 
+
+status 16 
+
+MatchFound:759 index 0 
+123
+normal pgm end
+
